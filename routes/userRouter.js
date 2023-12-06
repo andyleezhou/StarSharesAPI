@@ -3,16 +3,20 @@ const User = require("../model/userSchema");
 const router = express.Router();
 
 router.post("/signup", async (request, response) => {
-    const { email, password  } = request.query
+    const { name, email, password } = request.body;
 
-    if (!email || !password) {
+    if (!email || !password || !name) {
+        console.log("inside new")
+        console.log(email)
+        console.log(password)
+        console.log(name)
         return response.status(400).json({
-            message: "Email or password cannot be null",
+            message: "Email or password can be null",
             status: 400,
         })
     }
 
-    const user = new User(request.query);
+    const user = new User(request.body);
    
     try {
       console.log("Attempting to save user to MongoDB")
