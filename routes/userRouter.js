@@ -6,10 +6,6 @@ router.post("/signup", async (request, response) => {
     const { name, email, password } = request.body;
 
     if (!email || !password || !name) {
-        console.log("inside new")
-        console.log(email)
-        console.log(password)
-        console.log(name)
         return response.status(400).json({
             message: "Email or password can be null",
             status: 400,
