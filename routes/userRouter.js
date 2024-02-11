@@ -1,13 +1,14 @@
 const express = require("express");
 const User = require("../model/userSchema");
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 
 router.post("/signup", async (request, response) => {
-    const { name, email, password } = request.body;
+    const { firstName, lastName, email, password } = request.body;
 
-    if (!email || !password || !name) {
+    if (!email || !password || !firstName || !lastName) {
         return response.status(400).json({
-            message: "Email or password can be null",
+            message: "Email, password, firstName, or lastName cannot be null",
             status: 400,
         })
     }
@@ -34,33 +35,37 @@ router.post("/signup", async (request, response) => {
 );
 
 router.get("/getUserByEmail", async (request, response) => {
-    const { email } = request.query;
+    const { email, password } = request.query;
 
-    if (!email) {
+    if (!email || !password) {
         return response.status(400).json({
-            message: "Email cannot be null",
+            message: "Email and password are required",
             status: 400,
         });
     }
 
     try {
         console.log("Attempting to find user in MongoDB...");
-        const users = await User.find({ email }).exec();
+        const user = await User.findOne({ email, password }).exec();
+        console.log(user);
 
-        if (users.length === 0) {
+        if (!user) {
             return response.status(404).json({
                 message: "User not found in the database",
                 status: 404,
             });
         }
-        
-        const foundUser = users[0]; 
-        console.log("User found in database")
+
+        console.log("User found in database");
+
+        // Generate a token
+        const token = jwt.sign({ userId: user._id }, 'your_secret_key_here', { expiresIn: '1h' });
 
         response.status(200).json({
             message: "User successfully found in the database",
             status: 200,
-            user: foundUser,
+            user: user,
+            token: token, // Include the token in the response
         });
     } catch (error) {
         response.status(500).json({
@@ -70,5 +75,6 @@ router.get("/getUserByEmail", async (request, response) => {
         });
     }
 });
+
 
 module.exports = router;
