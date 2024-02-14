@@ -1,5 +1,6 @@
 const express = require("express");
 require("dotenv").config();
+const logger = require('./config/logger')
 
 const DB = require("./config/db.js");
 const UserRouter = require("./routes/userRouter");
@@ -14,6 +15,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", UserRouter);
 
 DB.connectDB();
+
+app.use((req, res, next) => {
+  // Log an info message for each incoming request
+  logger.info(`Received a ${req.method} request for ${req.url}`);
+  next();
+});
 
 app.get("/", (request, response) => {
   response.send({ message: "Hello from an Express API!" });
