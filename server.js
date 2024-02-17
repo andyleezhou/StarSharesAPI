@@ -4,6 +4,7 @@ const logger = require('./config/logger')
 
 const DB = require("./config/db.js");
 const UserRouter = require("./routes/userRouter");
+const ArtistRouter = require("./routes/artistRouter");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", UserRouter);
+app.use("/api/artist", ArtistRouter);
 
 DB.connectDB();
 
