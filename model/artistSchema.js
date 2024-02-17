@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { PortfolioSchema } = require('./subSchema');
+const { PortfolioSchema, StockSchema } = require('./subSchema');
 
 const ArtistSchema = new mongoose.Schema({
   firstName: {
@@ -23,6 +23,10 @@ const ArtistSchema = new mongoose.Schema({
       required: true,
   },
   stock: {
+    type: StockSchema,
+    required: false,
+  },
+  stockId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Stock',
     required: false,
