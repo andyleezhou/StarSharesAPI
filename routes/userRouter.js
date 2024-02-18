@@ -3,6 +3,8 @@ const User = require('../model/userSchema');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
+const { sendingMail } = require('../config/mailer');
+
 
 router.post("/signup", async (request, response) => {
     const { firstName, lastName, email, password } = request.body;
@@ -21,6 +23,17 @@ router.post("/signup", async (request, response) => {
       logger.info("Attempting to save user to MongoDB")
       await user.save();
       logger.info("User saved")
+
+     // Send verification email
+     const verificationToken = Math.random().toString(36).substring(7);
+     const mailOptions = {
+         from: process.env.email,
+         to: email,
+         subject: 'Account Verification',
+         text: `Hi ${firstName},\n\nThank you for signing up! Please use the following verification code to verify your account: ${verificationToken}`
+     };
+     await sendingMail(mailOptions);
+
       return response.status(200).json({ 
           message: "User successfully saved", 
           status: 200, 
