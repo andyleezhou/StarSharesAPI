@@ -1,32 +1,47 @@
-//importing modules
-const nodemailer = require('nodemailer')
+const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 
-
-//function to send email to the user
-module.exports.sendingMail = async({from, to, subject, text}) =>{
-
+// Function to send email to the user
+module.exports.sendingMail = async ({ from, to, subject, text, authorizationCode }) => {
   try {
-    let mailOptions = ({
+    // Create an OAuth2 client instance
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.OAUTH_CLIENT_ID,
+      process.env.OAUTH_CLIENT_SECRET,
+      process.env.REDIRECT_URI
+    );
+
+    // Exchange authorization code for tokens
+    const { tokens } = await oauth2Client.getToken(authorizationCode);
+
+    // Set the credentials
+    oauth2Client.setCredentials(tokens);
+
+    // Configure Nodemailer transport with OAuth2
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: 'starsharesapp@gmail.com', // Your Gmail address
+        accessToken: tokens.access_token,
+        clientId: process.env.OAUTH_CLIENT_ID,
+        clientSecret: process.env.OAUTH_CLIENT_SECRET,
+        refreshToken: tokens.refresh_token,
+      }
+    });
+
+    // Define mail options
+    const mailOptions = {
       from,
       to,
       subject,
-      text
-  })
-  //asign createTransport method in nodemailer to a variable
-  //service: to determine which email platform to use
-  //auth contains the senders email and password which are all saved in the .env
-  const Transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.email,
-        pass: process.env.email_password,
-      },
-    });
+      text,
+    };
 
-      //return the Transporter variable which has the sendMail method to send the mail
-      //which is within the mailOptions
-    return await Transporter.sendMail(mailOptions) 
+    // Send mail using the transporter
+    return await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.log(error)
+    console.error(error);
+    throw new Error('Failed to send email');
   }
-}
+};

@@ -27,11 +27,12 @@ router.post("/signup", async (request, response) => {
      // Send verification email
      const verificationToken = Math.random().toString(36).substring(7);
      const mailOptions = {
-         from: process.env.email,
+         from: 'StarSharesApp@gmail.com',
          to: email,
          subject: 'Account Verification',
          text: `Hi ${firstName},\n\nThank you for signing up! Please use the following verification code to verify your account: ${verificationToken}`
      };
+     
      await sendingMail(mailOptions);
 
       return response.status(200).json({ 
