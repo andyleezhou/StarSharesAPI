@@ -15,11 +15,11 @@ router.post("/signup", async (request, response) => {
     }
 
     try {
-        const stock = new Stock({
+        const stock = {
             artistName: firstName + " " + lastName,
             cost: 100,
             quantity: 10000
-        });
+        };
 
         const artist = new Artist({
             firstName,
