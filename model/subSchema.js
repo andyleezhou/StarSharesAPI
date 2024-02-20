@@ -35,6 +35,8 @@ const TransactionSchema = new mongoose.Schema({
         required: true,
     },
   });
+  const Stock = mongoose.model("Stock", StockSchema);
+
   
   const PortfolioSchema = new mongoose.Schema({
     balance: {
@@ -59,5 +61,5 @@ const TransactionSchema = new mongoose.Schema({
     },
   });
 module.exports = {
-    TransactionSchema, StockSchema, PortfolioSchema,
+    TransactionSchema, StockSchema, PortfolioSchema, Stock
 }
