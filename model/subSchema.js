@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
 
 const TransactionSchema = new mongoose.Schema({
     stock: {
@@ -22,6 +23,10 @@ const TransactionSchema = new mongoose.Schema({
   });
   
   const StockSchema = new mongoose.Schema({
+    stockID: {
+      type: ObjectId,
+      required: true,
+    },
     artistName: {
       type: String,
       required: true,

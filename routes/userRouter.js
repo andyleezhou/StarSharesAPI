@@ -36,16 +36,16 @@ router.post("/signup", async (request, response) => {
   }
 );
 
-router.post('/addToWatchList', async (request, response) => {
-    const {stock} = request.query;
-    if (!stock) {
-        logger.info("Stock in watchlist cannot be null");
-        return response.status(400).json({
-            message: "Stock in watchlist is required",
-            status: 400,
-        });
-    }
-});
+// router.post('/addToWatchList', async (request, response) => {
+//     const {stock} = request.query;
+//     if (!stock) {
+//         logger.info("Stock in watchlist cannot be null");
+//         return response.status(400).json({
+//             message: "Stock in watchlist is required",
+//             status: 400,
+//         });
+//     }
+// });
 
 router.get("/getUserByEmail", async (request, response) => {
     const { email, password } = request.query;
