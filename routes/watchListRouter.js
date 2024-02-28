@@ -8,7 +8,7 @@ const WatchList = require("../model/watchListSchema");
 /// Watchlist Stock Endpoint
 
 router.post("/createWatchlist", async (request, response) => {
-    const { userId, stocks } = request.body;
+    const { userId} = request.body;
 
     
   
@@ -23,7 +23,7 @@ router.post("/createWatchlist", async (request, response) => {
     // Check if watchlist already exists for the user
     try {
       const userObjId = new mongoose.Types.ObjectId(userId);
-      let watchlist = await WatchList.findByOne({userObjId}).exec();
+      let watchlist = await WatchList.findOne({userId: userObjId}).exec();
       if (watchlist) {
         logger.error("Watchlist already exists");
         return response.status(409).json({
@@ -64,9 +64,12 @@ router.post("/addToWatchlist", async (request, response) => {
     });
   }
 
+  const userObjId = new mongoose.Types.ObjectId(userId);
+  const stockObjId = new mongoose.Types.ObjectId(stockId);
+
   try {
     // Find the watchlist by userId
-    let watchlist = await WatchList.findById(userId);
+    let watchlist = await WatchList.findOne({userId: userObjId});
     if (!watchlist) {
       logger.error("Watchlist not found");
       return response.status(404).json({
@@ -76,12 +79,12 @@ router.post("/addToWatchlist", async (request, response) => {
     }
 
     // Add new stock to watchlist
-    if (watchlist.stocks.includes(stockId)) {
+    if (watchlist.stocks.includes(stockObjId)) {
       logger.info("Stock is already added to watchlist");
     } else {
-      logger.info("Stock successfully added to watchlist");
-      watchlist.stocks.add(stockId);
+      watchlist.stocks.push(stockObjId);
       await watchlist.save();
+      logger.info("Stock successfully added to watchlist");
       return response.status(200).json({
         message: "Stock successfully added to watchlist",
         status: 200,
@@ -108,10 +111,12 @@ router.get("/getWatchlist", async (request, response) => {
     });
   }
 
+  const userObjId = new mongoose.Types.ObjectId(userId);
+
   try {
     //Find the watchlist associated with the given userID
     logger.info("Attempting to watchlist in MongoDB...");
-    const watchlist = await WatchList.findOne({ userId }).exec();
+    const watchlist = await WatchList.findOne({ userId: userObjId });
     logger.info(`Found Watchlist: ${watchlist}`);
 
     if (!watchlist) {

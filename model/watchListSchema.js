@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 
 const WatchListSchema = new mongoose.Schema({
-  userID: {
+  userId: {
     type: ObjectId,
     ref: 'User',
     required: true,
