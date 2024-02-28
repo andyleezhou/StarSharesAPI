@@ -1,14 +1,16 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const logger = require("../config/logger");
-const Artist = require("../model/artistSchema");
-const { Stock } = require("../model/subSchema");
 const WatchList = require("../model/watchListSchema");
+
 
 /// Watchlist Stock Endpoint
 
 router.post("/createWatchlist", async (request, response) => {
-    const { userId } = request.body;
+    const { userId, stocks } = request.body;
+
+    
   
     if (!userId) {
       logger.error("User ID cannot be null");
@@ -20,7 +22,8 @@ router.post("/createWatchlist", async (request, response) => {
   
     // Check if watchlist already exists for the user
     try {
-      let watchlist = await WatchList.findOne({ userId: userId });
+      const userObjId = new mongoose.Types.ObjectId(userId);
+      let watchlist = await WatchList.findByOne({userObjId}).exec();
       if (watchlist) {
         logger.error("Watchlist already exists");
         return response.status(409).json({

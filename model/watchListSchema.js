@@ -4,11 +4,13 @@ const mongoose = require("mongoose");
 const WatchListSchema = new mongoose.Schema({
   userID: {
     type: ObjectId,
+    ref: 'User',
     required: true,
   },
   stocks: [
     {
       type: ObjectId,
+      ref: 'Stock',
       required: false,
     },
   ],
@@ -16,4 +18,4 @@ const WatchListSchema = new mongoose.Schema({
 
 const WatchList = mongoose.model("WatchList", WatchListSchema);
 
-module.exports = { WatchListSchema, WatchList };
+module.exports = WatchList;

@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", UserRouter);
 app.use("/api/artist", ArtistRouter);
-app.use("/api/", WatchListRouter);
+app.use("/api", WatchListRouter);
 
 DB.connectDB();
 
