@@ -101,7 +101,7 @@ router.post("/addToWatchlist", async (request, response) => {
 });
 
 router.get("/getWatchlist", async (request, response) => {
-  const { userId } = request.body;
+  const { userId } = request.query;
 
   if (!userId) {
     logger.error("User ID cannot be null");
