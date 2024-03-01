@@ -1,5 +1,5 @@
+const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
-const { PortfolioSchema } = require('./subSchema');
 
 const UserSchema = new mongoose.Schema({
   firstName: {
@@ -19,7 +19,8 @@ const UserSchema = new mongoose.Schema({
       required: true,
   },
   portfolio: {
-    type: PortfolioSchema,
+    type: ObjectId,
+    ref: 'Portfolio',
     required: false,
   },
 });

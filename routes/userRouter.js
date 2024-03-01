@@ -18,6 +18,15 @@ router.post("/signup", async (request, response) => {
     const user = new User(request.body);
    
     try {
+       logger.info("Attempting to find user in MongoDB...");
+       const existingUser = await User.findOne({ email, password }).exec();
+       if (existingUser) {
+       logger.error("User already found with those credentials!");
+            return response.status(400).json({
+                message: "Email is already in use!",
+                status: 400,
+            })
+        }
       logger.info("Attempting to save user to MongoDB")
       await user.save();
       logger.info("User saved")
@@ -35,17 +44,6 @@ router.post("/signup", async (request, response) => {
     }
   }
 );
-
-// router.post('/addToWatchList', async (request, response) => {
-//     const {stock} = request.query;
-//     if (!stock) {
-//         logger.info("Stock in watchlist cannot be null");
-//         return response.status(400).json({
-//             message: "Stock in watchlist is required",
-//             status: 400,
-//         });
-//     }
-// });
 
 router.get("/getUserByEmail", async (request, response) => {
     const { email, password } = request.query;
