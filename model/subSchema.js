@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
+const { StockSchema } = require('./stockSchema');
 
 const TransactionSchema = new mongoose.Schema({
     stock: {
@@ -20,22 +22,6 @@ const TransactionSchema = new mongoose.Schema({
         required: true,
     },
   });
-  
-  const StockSchema = new mongoose.Schema({
-    artistName: {
-      type: String,
-      required: true,
-    },
-    cost: {
-        type: Number,
-        required: true,
-    },
-    quantity: {
-        type: Number,
-        required: true,
-    },
-  });
-  const Stock = mongoose.model("Stock", StockSchema);
 
   
   const PortfolioSchema = new mongoose.Schema({
@@ -61,5 +47,5 @@ const TransactionSchema = new mongoose.Schema({
     },
   });
 module.exports = {
-    TransactionSchema, StockSchema, PortfolioSchema, Stock
+    TransactionSchema, PortfolioSchema
 }
