@@ -7,7 +7,7 @@ const Stock = require("../model/stockSchema");
 // Stock Endpoint
 
 router.get("/getStock", async (request, response) => {
-    const { stockId } = request.body;
+    const { stockId } = request.query;
   
     if (!stockId) {
       logger.error("Stock ID cannot be null");
