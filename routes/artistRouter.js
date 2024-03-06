@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const logger = require('../config/logger');
 const Artist = require('../model/artistSchema');
-const { Stock } = require('../model/transactionSchema');
+const Stock = require('../model/stockSchema');
 const User = require('../model/userSchema');
 
 router.post("/signup", async (request, response) => {
@@ -55,9 +55,9 @@ router.post("/signup", async (request, response) => {
 
 /// Trading Stock Endpoint
 router.post("/trade", async (request, response) => {
-    const { userId, artistId, artistName, quantity } = request.body; 
+    const { userId, artistId, stockId, quantity } = request.body; 
 
-    if (!userId || !artistName || !quantity || !artistId) {
+    if (!userId || !stockId || !quantity || !artistId) {
         logger.error("User ID, stock ID, artist ID,  or quantity cannot be null");
         return response.status(400).json({
             message: "User ID, stock ID, artist ID,  or quantity cannot be null",
@@ -86,7 +86,7 @@ router.post("/trade", async (request, response) => {
         }
 
         // Find the stock
-        let stock = await Stock.findOne({ artistName: artist.firstName + " " + artist.lastName });
+        let stock = await Stock.findById(stockId);
         if (!stock) {
             // Create new stock if not exists
             stock = new Stock({
@@ -101,12 +101,19 @@ router.post("/trade", async (request, response) => {
         stock.quantity += quantity;
         await stock.save();
 
-        // Update user's stocks
-        if (!user.stocks) {
-            user.stocks = [];
+        if (!user.portfolio) {
+            logger.info('User portfolio not found... Initializing empty list')
+            user.portfolio = [];
         }
-        user.stocks.push(stock); // Assuming User schema has a field 'stocks' to store the user's stocks
+
+        if (!user.portfolio.includes(stock._id)) {
+            user.portfolio.push(stock._id); 
+        } else {
+            logger.info('User already has that stockId in their portfolio')
+        }
+        
         await user.save();
+        logger.info('StockId added into User Portfolio')
 
         logger.info(`Stock bought by user ${user.username}`);
         return response.status(200).json({ 

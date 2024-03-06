@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
-const { ObjectId } = require("mongodb");
 
 const StockSchema = new mongoose.Schema({
-  stockId: {
-    type: ObjectId,
-    required: true,
-  },
   artistName: {
     type: String,
     required: true,
