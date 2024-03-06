@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const logger = require('../config/logger');
 const Artist = require('../model/artistSchema');
-const { Stock } = require('../model/subSchema');
+const { Stock } = require('../model/transactionSchema');
 const User = require('../model/userSchema');
 
 router.post("/signup", async (request, response) => {
