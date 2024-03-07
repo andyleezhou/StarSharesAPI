@@ -3,6 +3,7 @@ const User = require('../model/userSchema');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
+const bcrypt = require('bcryptjs');
 
 router.post("/signup", async (request, response) => {
     const { firstName, lastName, email, password } = request.body;
@@ -19,7 +20,7 @@ router.post("/signup", async (request, response) => {
    
     try {
        logger.info("Attempting to find user in MongoDB...");
-       const existingUser = await User.findOne({ email, password }).exec();
+       const existingUser = await User.findOne({ email }).exec(); // need to change this to find one user with email, if user has a different password, they still are added to the database
        if (existingUser) {
        logger.error("User already found with those credentials!");
             return response.status(400).json({
@@ -46,7 +47,7 @@ router.post("/signup", async (request, response) => {
 );
 
 router.get("/getUserByEmail", async (request, response) => {
-    const { email, password } = request.query;
+    const { email, password } = request.query; // req email
 
     if (!email || !password) {
         logger.info("Email or password cannot be null");
@@ -54,11 +55,11 @@ router.get("/getUserByEmail", async (request, response) => {
             message: "Email and password are required",
             status: 400,
         });
-    }
+    }// make sure password ret true and email is not in db
 
     try {
         logger.info("Attempting to find user in MongoDB...");
-        const user = await User.findOne({ email, password }).exec();
+        const user = await User.findOne({ email }).exec();
         logger.info(`Found User: ${user}`);
 
         if (!user) {
@@ -69,6 +70,17 @@ router.get("/getUserByEmail", async (request, response) => {
         }
 
         logger.info("User found in database");
+        // check if user pw matches
+
+        if ( await bcrypt.compareSync(password, user.password)) {
+            logger.info("Password is correct");
+        } else {
+            logger.info("Password is incorrect");
+            return response.status(400).json({
+                message: "Password is incorrect",
+                status: 400,
+            });
+        }
 
         // Generate a token
         logger.info("generating jwt")
