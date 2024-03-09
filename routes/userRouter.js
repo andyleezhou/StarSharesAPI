@@ -3,6 +3,7 @@ const User = require('../model/userSchema');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
+const { hashPassword, validateUser } = require('../util/bcrypt');
 
 router.post("/signup", async (request, response) => {
     const { firstName, lastName, email, password } = request.body;
@@ -15,11 +16,18 @@ router.post("/signup", async (request, response) => {
         })
     }
 
-    const user = new User(request.body);
+    let hashedPassword = hashPassword(password);
+
+    const user = new User({
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName
+    });
    
     try {
        logger.info("Attempting to find user in MongoDB...");
-       const existingUser = await User.findOne({ email, password }).exec();
+       const existingUser = await User.findOne({ email }).exec();
        if (existingUser) {
        logger.error("User already found with those credentials!");
             return response.status(400).json({
@@ -58,8 +66,7 @@ router.get("/getUserByEmail", async (request, response) => {
 
     try {
         logger.info("Attempting to find user in MongoDB...");
-        const user = await User.findOne({ email, password }).exec();
-        logger.info(`Found User: ${user}`);
+        const user = await User.findOne({ email });
 
         if (!user) {
             return response.status(404).json({
@@ -68,12 +75,14 @@ router.get("/getUserByEmail", async (request, response) => {
             });
         }
 
-        logger.info("User found in database");
+        let token;
 
-        // Generate a token
-        logger.info("generating jwt")
-        const token = jwt.sign({ userId: user._id }, 'your_secret_key_here', { expiresIn: '1h' });
-        logger.info("assigning jwt to user")
+        if (validateUser(password, user)) {
+            logger.info("User found in database");
+            logger.info("generating jwt")
+            token = jwt.sign({ userId: user._id }, 'your_secret_key_here', { expiresIn: '1h' });
+            logger.info("assigning jwt to user")
+        }
 
         return response.status(200).json({
             message: "User successfully found in the database",
