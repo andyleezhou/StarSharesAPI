@@ -5,6 +5,7 @@ const Artist = require('../model/artistSchema');
 const Stock = require('../model/stockSchema');
 const User = require('../model/userSchema');
 const Portfolio = require('../model/portfolioSchema');
+const { hashPassword, validateUser } = require('../util/bcrypt');
 
 router.post("/signup", async (request, response) => {
     // take in signup params
@@ -18,6 +19,8 @@ router.post("/signup", async (request, response) => {
             status: 400,
         })
     }
+
+    let hashedPassword = hashPassword(password);
 
     try {
         // create default stock object
@@ -40,7 +43,7 @@ router.post("/signup", async (request, response) => {
             firstName,
             lastName,
             email,
-            password, 
+            password: hashedPassword, 
             bio,
             stockId: stock._id,
             portfolioId: portfolio._id
@@ -137,6 +140,52 @@ router.post("/trade", async (request, response) => {
             message: "Failed to buy stock",
             status: 500,
             error: error.message
+        });
+    }
+});
+
+router.get("/login", async (request, response) => {
+    const { email, password } = request.query;
+
+    if (!email || !password) {
+        logger.info("Email or password cannot be null");
+        return response.status(400).json({
+            message: "Email and password are required",
+            status: 400,
+        });
+    }
+
+    try {
+        logger.info("Attempting to find Artist in MongoDB...");
+        const artist = await Artist.findOne({ email });
+
+        if (!artist) {
+            return response.status(404).json({
+                message: "Artist not found in the database",
+                status: 404,
+            });
+        }
+
+        let token;
+
+        if (validateUser(password, artist)) {
+            logger.info("Artist found in database");
+            logger.info("generating jwt")
+            token = jwt.sign({ userId: artist._id }, 'your_secret_key_here', { expiresIn: '1h' });
+            logger.info("assigning jwt to user")
+        }
+
+        return response.status(200).json({
+            message: "Artist successfully found in the database",
+            status: 200,
+            artist: artist,
+            token: token, // Include the token in the response
+        });
+    } catch (error) {
+        return response.status(500).json({
+            message: "Error while searching for Artist in MongoDB",
+            status: 500,
+            error: error.message,
         });
     }
 });
