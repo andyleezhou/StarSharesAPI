@@ -4,6 +4,7 @@ const logger = require('../config/logger');
 const Artist = require('../model/artistSchema');
 const Stock = require('../model/stockSchema');
 const User = require('../model/userSchema');
+const Portfolio = require('../model/portfolioSchema');
 
 router.post("/signup", async (request, response) => {
     // take in signup params
@@ -20,11 +21,20 @@ router.post("/signup", async (request, response) => {
 
     try {
         // create default stock object
-        const stock = {
+        const stock = new Stock({
             artistName: firstName + " " + lastName,
             cost: 100,
             quantity: 10000
-        };
+        });
+
+        const portfolio = new Portfolio({
+            balance: stock.cost * stock.quantity,
+            stocks: [stock._id],
+            buyingPower: 0,
+            quantity: stock.quantity,
+            transactions: []
+        });
+
         // create artist object to be saved in DB
         const artist = new Artist({
             firstName,
@@ -32,7 +42,8 @@ router.post("/signup", async (request, response) => {
             email,
             password, 
             bio,
-            stock: stock
+            stockId: stock._id,
+            portfolioId: portfolio._id
         });
 
         logger.info("Attempting to save artist to MongoDB");
