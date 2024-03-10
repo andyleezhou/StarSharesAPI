@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../config/logger');
+const jwt = require('jsonwebtoken');
 const Artist = require('../model/artistSchema');
 const Stock = require('../model/stockSchema');
 const User = require('../model/userSchema');
