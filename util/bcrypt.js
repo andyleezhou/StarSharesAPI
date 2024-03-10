@@ -21,7 +21,7 @@ const hashPassword = (password) => {
 }
 
 const validateUser = (password, user) => {
-    bcrypt.compareSync(password, user.password)     
+    return bcrypt.compareSync(password, user.password)     
 }
 
 module.exports = {
