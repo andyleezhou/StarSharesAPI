@@ -57,7 +57,9 @@ router.post("/signup", async (request, response) => {
         return response.status(200).json({ 
             message: "Artist successfully signed up", 
             status: 200, 
-            artist: artist
+            artist: artist,
+            stock: stock,
+            portfolio: portfolio
         });
     } catch (error) {
         return response.status(500).json({
