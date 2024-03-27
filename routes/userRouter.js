@@ -4,7 +4,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
 const { hashPassword, validateUser } = require('../util/bcrypt');
-const {retrieveUserId, tokenIsValid} = require('../util/jwt')
+const {retrieveUserId, tokenIsNotValid} = require('../util/jwt')
 
 router.post("/signup", async (request, response) => {
     const { firstName, lastName, email, password } = request.body;
@@ -111,13 +111,13 @@ router.get("/getUserByToken", async (request, response) => {
         });
     }
 
-    const isNotValid = tokenIsValid(userToken);
+    const isNotValid = tokenIsNotValid(userToken);
 
     if (isNotValid) {
-        logger.info("Token not valid")
-        return response.status(400).json({
+        logger.error("Token not valid")
+        return response.status(401).json({
             message: "User Token is not valid",
-            status: 400,
+            status: 401,
         });
     }
 

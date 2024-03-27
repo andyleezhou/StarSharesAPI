@@ -5,12 +5,17 @@ const retrieveUserId = (token) => {
     return payload.userId;
 };
 
-const tokenIsValid = (token) => {
-    const expiration = (jwt.verify(token, "your_secret_key_here")).exp;
-    const currentTime = Date.now() / 1000; // Current time in seconds
-    return expiration < currentTime;
+const tokenIsNotValid = (token) => {
+    try {
+        const expiration = jwt.verify(token, "your_secret_key_here").exp;
+        const currentTime = Date.now() / 1000; // Current time in seconds
+        return expiration <= currentTime; // Return false if token is still valid
+    } catch (error) {
+        // Token expired, return true
+       return true;
+    }
 };
 
 module.exports = {
-    retrieveUserId, tokenIsValid
+    retrieveUserId, tokenIsNotValid
 }
