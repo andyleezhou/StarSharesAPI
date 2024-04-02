@@ -8,7 +8,7 @@ const WatchList = require("../model/watchListSchema");
 /// Watchlist Stock Endpoint
 
 router.post("/createWatchlist", async (request, response) => {
-    const { userId} = request.body;
+    const { userId } = request.body;
 
     
   
