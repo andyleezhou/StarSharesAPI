@@ -5,8 +5,8 @@ const SpotifyWebApi = require("spotify-web-api-node");
 const { getAccessToken } = require("../util/spotify")
 
 const spotifyApi = new SpotifyWebApi({
-    clientId: process.env.CLIENT_ID, // privadas con env
-    clientSecret: process.env.CLIENT_SECRET
+    clientId: process.env.SPOTIFY_CLIENT_ID, 
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET
   });  
 
 getAccessToken(spotifyApi);
