@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
       required: true,
   },
   portfolio: {
-    type: ObjectId,
+    type: [ObjectId],
     ref: 'Portfolio',
     required: false,
   },
