@@ -90,5 +90,52 @@ router.get("/getUserByEmail", async (request, response) => {
     }
 });
 
+// WORKS
+router.get('/recently-viewed-artists', async (req, res) => {
+  try {
+    const userId = req.query.userID;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user.recentlyViewed);
+  } catch (error) {
+    console.error('Error fetching recently viewed artists:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
+router.post('/recently-viewed-artists', async (req, res) => {
+  const { userId, artistId } = req.body;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    user.recentlyViewed.push(artistId);
+    await user.save();
+    res.json({ message: 'Artist added to recently viewed' });
+  } catch (error) {
+    console.error('Error adding recently viewed artist:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.delete('/recently-viewed-artists', async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    user.recentlyViewed = [];
+    await user.save();
+    res.json({ message: 'Recently viewed artists cleared' });
+  } catch (error) {
+    console.error('Error clearing recently viewed artists:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+  
 module.exports = router;
