@@ -152,14 +152,17 @@ router.get("/getUserByToken", async (request, response) => {
     }
 });
 
-// WORKS
 router.get('/recently-viewed-artists', async (req, res) => {
   try {
-    const userId = req.query.userID;
+    // find user by ID
+    const userId = req.query.userId;
     const user = await User.findById(userId);
+    
+    // catch null user
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    // fetch recently viewed artists
     res.json(user.recentlyViewed);
   } catch (error) {
     console.error('Error fetching recently viewed artists:', error);
