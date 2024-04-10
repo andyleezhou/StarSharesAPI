@@ -22,8 +22,8 @@ router.get("/getStock", async (request, response) => {
     try {
       //Find the stock associated with the given stockID
       logger.info("Attempting to find stock in MongoDB...");
-      const stock = await Stock.findById(stockId);
-      logger.info(`Found Stock: ${stock}`);
+      const stock = await Stock.findById(stockObjId);
+      logger.info(`Found Stock`);
   
       if (!stock) {
         return response.status(404).json({
@@ -47,7 +47,7 @@ router.get("/getStock", async (request, response) => {
   });
 
   router.post("/addStock", async (request, response) => {
-    const { artistName } = request.body;
+    const { artistName, artistImage } = request.body;
 
     if (!artistName) {
         logger.error("Artist Name cannot be null");
@@ -59,6 +59,7 @@ router.get("/getStock", async (request, response) => {
 
     const stock = new Stock({
         artistName: artistName,
+        artistImage: artistImage.url,
         cost: 100
     });
    
@@ -79,7 +80,53 @@ router.get("/getStock", async (request, response) => {
       return response.status(200).json({ 
           message: "Artist stock successfully saved", 
           status: 200, 
-          stock: stock
+          stock: stock,
+        });
+    } catch (error) {
+      return response.status(500).json({
+          message: "Artist stock could not be saved in MongoDB",
+          status: 500,
+          error: error
+      });
+    }
+  }
+);
+
+router.post("/addStock", async (request, response) => {
+    const { artistName, artistImage } = request.body;
+
+    if (!artistName) {
+        logger.error("Artist Name cannot be null");
+        return response.status(400).json({
+            message: "Artist Name cannot be null",
+            status: 400,
+        })
+    }
+
+    const stock = new Stock({
+        artistName: artistName,
+        artistImage: artistImage.url,
+        cost: 100
+    });
+   
+    try {
+       logger.info("Attempting to find stock in MongoDB...");
+       const existingStock = await Stock.findOne({ artistName }).exec();
+       if (existingStock) {
+       logger.error("Stock already found with that artist name!");
+            return response.status(400).json({
+                message: "Stock already in database!",
+                stock: existingStock,
+                status: 400,
+            })
+        }
+      logger.info("Attempting to save artist stock to MongoDB")
+      await stock.save();
+      logger.info("Artist stock saved")
+      return response.status(200).json({ 
+          message: "Artist stock successfully saved", 
+          status: 200, 
+          stock: stock,
         });
     } catch (error) {
       return response.status(500).json({

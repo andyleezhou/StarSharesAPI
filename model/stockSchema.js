@@ -5,6 +5,10 @@ const StockSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  artistImage: {
+    type: String,
+    required: false,
+  },
   cost: {
     type: Number,
     default: 100,
