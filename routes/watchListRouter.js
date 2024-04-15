@@ -76,7 +76,6 @@ router.post("/deleteWatchlist", async (request, response) => {
 
     // Delete watchlist
     logger.info("Found watchlist to be deleted");
-    console.log(watchlist);
     await WatchList.deleteOne({ userId: userObjId });
     logger.info("Watchlist successfully deleted");
     return response.status(200).json({
