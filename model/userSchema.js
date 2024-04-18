@@ -23,6 +23,11 @@ const UserSchema = new mongoose.Schema({
     ref: 'Portfolio',
     required: false,
   },
+  recentlyViewed: {
+    type: Array,
+    ref: 'Watchlist',
+    required: false,
+  },
 });
 
 const User = mongoose.model("User", UserSchema);
