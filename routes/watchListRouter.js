@@ -180,12 +180,12 @@ router.get("/getWatchlist", async (request, response) => {
 
 router.post("/deleteFromWatchlist", async (request, response) => {
   const { userId, stockId } = request.body;
-
+  
   if (!userId || !stockId) {
     logger.error("User ID or stockId cannot be null");
-    return response.status(400).json({
+    return response.status(401).json({
       message: "User ID or stockId cannot be null",
-      status: 400,
+      status: 401,
     });
   }
 
