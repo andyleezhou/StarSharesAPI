@@ -171,13 +171,20 @@ router.get('/recently-viewed-artists', async (req, res) => {
 });
 
 router.post('/recently-viewed-artists', async (req, res) => {
-  const { userId, artistId } = req.body;
+  const userId = req.query.userId;
+  const artistId = req.query.artistId;
   try {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    user.recentlyViewed.push(artistId);
+
+    // Check if the artistId already exists in the recentlyViewed array
+    if (!user.recentlyViewed.includes(artistId)) {
+      // If not, push it to the array
+      user.recentlyViewed.push(artistId);
+    }
+
     await user.save();
     res.json({ message: 'Artist added to recently viewed' });
   } catch (error) {
@@ -185,6 +192,7 @@ router.post('/recently-viewed-artists', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 router.delete('/recently-viewed-artists', async (req, res) => {
   const { userId } = req.body;
