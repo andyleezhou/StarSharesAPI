@@ -46,6 +46,45 @@ router.get("/getStock", async (request, response) => {
     }
   });
 
+  router.get("/getStockByName", async (request, response) => {
+    const { artistName } = request.query;
+    if (!artistName) {
+      logger.error("Artist name cannot be null");
+      return response.status(401).json({
+        message: "Artist name cannot be null",
+        status: 401,
+      });
+    }
+  
+    //const stockObjId = new mongoose.Types.ObjectId(stockId);
+  
+    try {
+      //Find the stock associated with the given stockID
+      logger.info("Attempting to find stock in MongoDB...");
+      const stock = await Stock.findOne({artistName});
+      logger.info(`Found Stock`);
+  
+      if (!stock) {
+        return response.status(404).json({
+          message: "Stock not found in the database",
+          status: 404,
+        });
+      }
+  
+      return response.status(200).json({
+        message: "Stock successfully found in the database",
+        status: 200,
+        stock: stock
+      });
+    } catch (error) {
+      return response.status(500).json({
+        message: "Error while searching for stock in MongoDB",
+        status: 500,
+        error: error.message,
+      });
+    }
+  });
+
   router.post("/addStock", async (request, response) => {
     const { artistName, artistImage } = request.body;
     if (!artistName || !artistImage) {
@@ -90,6 +129,8 @@ router.get("/getStock", async (request, response) => {
     }
   }
 );
+
+
 
 
   module.exports = router;
