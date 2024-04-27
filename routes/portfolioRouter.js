@@ -121,6 +121,50 @@ router.get('/getPortfolioByUserId', async (request, response) => {
     }
 });
 
+router.get('/getOwnedStocks', async (request, response) => {
+    const { userId } = request.query;
+
+    if (!userId) {
+        Logger.error('User ID cannot be null');
+        return response.status(400).json({
+            message: 'User ID cannot be null',
+            status: 400,
+        });
+    }
+
+    try {
+        const userObjId = new mongoose.Types.ObjectId(userId);
+        let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
+        if (!portfolio) {
+            Logger.error('Portfolio not found');
+            return response.status(404).json({
+                message: 'Portfolio not found',
+                status: 404,
+            });
+        }
+
+        const ownedStocks = [];
+        for (const stockId of portfolio.stocks) {
+            const stock = await Stock.findById(stockId).exec();
+            if (stock) {
+                ownedStocks.push(stock);
+            }
+        }
+
+        return response.status(200).json({
+            message: 'Owned stocks found',
+            status: 200,
+            stocks: ownedStocks,
+        });
+    } catch (error) {
+        return response.status(500).json({
+            message: 'Failed to get owned stocks',
+            status: 500,
+            error: error.message,
+        });
+    }
+});
+
 router.post('/addTransactionToPortfolio', async (request, response) => {
     const { userId, stockId, transactionType, quantity } = request.body;
 
