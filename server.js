@@ -7,6 +7,7 @@ const UserRouter = require("./routes/userRouter");
 const ArtistRouter = require("./routes/artistRouter");
 const StockRouter = require("./routes/stockRouter")
 const WatchListRouter = require("./routes/watchListRouter");
+const PortfolioRouter = require("./routes/portfolioRouter");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +20,7 @@ app.use("/api", UserRouter);
 app.use("/api/artist", ArtistRouter);
 app.use("/api", StockRouter);
 app.use("/api", WatchListRouter);
+app.use("/api", PortfolioRouter);
 
 DB.connectDB();
 
