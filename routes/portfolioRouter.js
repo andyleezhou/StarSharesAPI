@@ -133,6 +133,15 @@ router.get('/getOwnedStocks', async (request, response) => {
     }
 
     try {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            Logger.error('Invalid user ID');
+            return response.status(400).json({
+                message: 'Invalid user ID',
+                status: 400,
+                userId: userId,
+            });
+        }
+
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (!portfolio) {
@@ -157,12 +166,14 @@ router.get('/getOwnedStocks', async (request, response) => {
             stocks: ownedStocks,
         });
     } catch (error) {
+        console.error('Error while fetching owned stocks:', error);
         return response.status(500).json({
             message: 'Failed to get owned stocks',
             status: 500,
             error: error.message,
         });
     }
+    
 });
 
 router.post('/addTransactionToPortfolio', async (request, response) => {
@@ -285,8 +296,6 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         });
     }
 });
-
-
 
 router.delete('/removeStockFromPortfolio', async (request, response) => {
     const { userId, stockId } = request.body;
