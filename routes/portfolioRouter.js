@@ -1,16 +1,64 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Logger = require('../config/logger');
+const logger = require("../config/logger");
+const Portfolio = require("../model/portfolioSchema");
+const express = require('express');
 const mongoose = require('mongoose');
-const Portfolio = require('../model/portfolioSchema');
 const User = require('../model/userSchema');
 const Stock = require('../model/stockSchema'); 
+
+router.get("/getPortfolio", async (request, response) => {
+    const { portfolioId } = request.query;
+  
+    if (!portfolioId) {
+      logger.error("portfolioId cannot be null");
+      return response.status(400).json({
+        message: "portfolioId cannot be null",
+        status: 400,
+      });
+    }
+    
+    try {
+      //Find the portfolio associated with the given portfolioId
+      logger.info("Attempting to find stock in MongoDB...");
+      const portfolio = await Portfolio.findById(portfolioId);
+      logger.info(`Found Portfolio: ${portfolio}`);
+  
+      if (!portfolio) {
+        return response.status(404).json({
+          message: "Portfolio not found in the database",
+          status: 404,
+        });
+      }
+  
+      return response.status(200).json({
+        message: "Portfolio successfully found in the database",
+        status: 200,
+        portfolio: portfolio
+      });
+    } catch (error) {
+      return response.status(500).json({
+        message: "Error while searching for Portfolio in MongoDB",
+        status: 500,
+        error: error.message,
+      });
+    }
+  });
+
+  const getBalanceFromPortfolio = (portfolio) => {
+      if (!portfolio) {
+          logger.error("Portfolio cannot be null");
+          return null;
+      }
+      return portfolio.balance;
+  }
+
 
 router.post('/createPortfolio', async (request, response) => {
     const { userId } = request.body;
 
     if (!userId) {
-        Logger.error('User ID cannot be null');
+        logger.error('User ID cannot be null');
         return response.status(400).json({
             message: 'User ID cannot be null',
             status: 400,
@@ -21,7 +69,7 @@ router.post('/createPortfolio', async (request, response) => {
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (portfolio) {
-            Logger.error('Portfolio already exists');
+            logger.error('Portfolio already exists');
             return response.status(409).json({
                 message: 'Portfolio already exists',
                 status: 409,
@@ -30,9 +78,9 @@ router.post('/createPortfolio', async (request, response) => {
 
         portfolio = new Portfolio(request.body);
 
-        Logger.info('Attempting to save new Portfolio to MongoDB');
+        logger.info('Attempting to save new Portfolio to MongoDB');
         await portfolio.save();
-        Logger.info('Portfolio saved');
+        logger.info('Portfolio saved');
         return response.status(201).json({
             message: 'Portfolio successfully created',
             status: 201,
@@ -51,7 +99,7 @@ router.post('/deletePortfolio', async (request, response) => {
     const { userId } = request.body;
 
     if (!userId) {
-        Logger.error('User ID cannot be null');
+        logger.error('User ID cannot be null');
         return response.status(400).json({
             message: 'User ID cannot be null',
             status: 400,
@@ -62,16 +110,16 @@ router.post('/deletePortfolio', async (request, response) => {
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (!portfolio) {
-            Logger.error('Portfolio does not exist');
+            logger.error('Portfolio does not exist');
             return response.status(404).json({
                 message: 'Portfolio does not exist',
                 status: 404,
             });
         }
 
-        Logger.info('Attempting to delete Portfolio from MongoDB');
+        logger.info('Attempting to delete Portfolio from MongoDB');
         await Portfolio.deleteOne({ userId: userObjId }).exec();
-        Logger.info('Portfolio deleted');
+        logger.info('Portfolio deleted');
         return response.status(200).json({
             message: 'Portfolio successfully deleted',
             status: 200,
@@ -89,7 +137,7 @@ router.get('/getPortfolioByUserId', async (request, response) => {
     const { userId } = request.query;
 
     if (!userId) {
-        Logger.info('User ID cannot be null');
+        logger.info('User ID cannot be null');
         return response.status(400).json({
             message: 'User ID is required',
             status: 400,
@@ -100,7 +148,7 @@ router.get('/getPortfolioByUserId', async (request, response) => {
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (!portfolio) {
-            Logger.error('Portfolio not found');
+            logger.error('Portfolio not found');
             return response.status(404).json({
                 message: 'Portfolio not found',
                 status: 404,
@@ -125,7 +173,7 @@ router.get('/getOwnedStocks', async (request, response) => {
     const { userId } = request.query;
 
     if (!userId) {
-        Logger.error('User ID cannot be null');
+        logger.error('User ID cannot be null');
         return response.status(400).json({
             message: 'User ID cannot be null',
             status: 400,
@@ -134,7 +182,7 @@ router.get('/getOwnedStocks', async (request, response) => {
 
     try {
         if (!mongoose.Types.ObjectId.isValid(userId)) {
-            Logger.error('Invalid user ID');
+            logger.error('Invalid user ID');
             return response.status(400).json({
                 message: 'Invalid user ID',
                 status: 400,
@@ -145,7 +193,7 @@ router.get('/getOwnedStocks', async (request, response) => {
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (!portfolio) {
-            Logger.error('Portfolio not found');
+            logger.error('Portfolio not found');
             return response.status(404).json({
                 message: 'Portfolio not found',
                 status: 404,
@@ -180,7 +228,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
     const { userId, stockId, transactionType, quantity } = request.body;
 
     if (!userId || !stockId || !transactionType || !quantity) {
-        Logger.error('Invalid request parameters');
+        logger.error('Invalid request parameters');
         return response.status(400).json({
             message: 'Invalid request parameters',
             status: 400
@@ -191,7 +239,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (!portfolio) {
-            Logger.error('Portfolio not found');
+            logger.error('Portfolio not found');
             return response.status(404).json({
                 message: 'Portfolio not found',
                 status: 404
@@ -204,7 +252,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         // Fetch the stock information from the database based on the provided stockId
         const stock = await Stock.findById(stockObjId).exec();
         if (!stock) {
-            Logger.error('Stock not found');
+            logger.error('Stock not found');
             return response.status(404).json({
                 message: 'Stock not found',
                 status: 404
@@ -216,7 +264,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
 
         // Check if the user has enough buying power for a buy transaction
         if (transactionType === 'buy' && portfolio.buyingPower < transactionCost) {
-            Logger.error('Insufficient buying power');
+            logger.error('Insufficient buying power');
             return response.status(400).json({
                 message: 'Insufficient buying power',
                 status: 400
@@ -241,7 +289,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
 
         // If the transaction is a buy, check if there are enough stocks available
         if (transactionType === 'buy' && quantity > stock.quantity) {
-            Logger.error('Insufficient stocks available');
+            logger.error('Insufficient stocks available');
             return response.status(400).json({
                 message: 'Insufficient stocks available',
                 status: 400
@@ -250,7 +298,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
 
         // If the transaction is a sell, check if the user has enough stock to sell
         if (transactionType === 'sell' && quantity > netQuantity) {
-            Logger.error('Insufficient stock to sell');
+            logger.error('Insufficient stock to sell');
             return response.status(400).json({
                 message: 'Insufficient stock to sell',
                 status: 400
@@ -280,9 +328,9 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
 
         portfolio.transactions.push(transaction);
 
-        Logger.info('Attempting to save Portfolio to MongoDB');
+        logger.info('Attempting to save Portfolio to MongoDB');
         await portfolio.save();
-        Logger.info('Transaction added to Portfolio');
+        logger.info('Transaction added to Portfolio');
         return response.status(200).json({
             message: 'Transaction added to Portfolio',
             status: 200,
@@ -301,7 +349,7 @@ router.delete('/removeStockFromPortfolio', async (request, response) => {
     const { userId, stockId } = request.body;
 
     if (!userId || !stockId) {
-        Logger.error('User ID and Stock ID cannot be null');
+        logger.error('User ID and Stock ID cannot be null');
         return response.status(400).json({
             message: 'User ID and Stock ID cannot be null',
             status: 400,
@@ -312,7 +360,7 @@ router.delete('/removeStockFromPortfolio', async (request, response) => {
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (!portfolio) {
-            Logger.error('Portfolio not found');
+            logger.error('Portfolio not found');
             return response.status(404).json({
                 message: 'Portfolio not found',
                 status: 404,
@@ -322,9 +370,9 @@ router.delete('/removeStockFromPortfolio', async (request, response) => {
         const stockObjId = new mongoose.Types.ObjectId(stockId);
         portfolio.stocks.pull(stockObjId);
 
-        Logger.info('Attempting to save Portfolio to MongoDB');
+        logger.info('Attempting to save Portfolio to MongoDB');
         await portfolio.save();
-        Logger.info('Stock removed from Portfolio');
+        logger.info('Stock removed from Portfolio');
         return response.status(200).json({
             message: 'Stock removed from Portfolio',
             status: 200,
@@ -343,7 +391,7 @@ router.post('/addStockToPortfolio', async (request, response) => {
     const { userId, stockId } = request.body;
 
     if (!userId || !stockId) {
-        Logger.error('User ID and Stock ID cannot be null');
+        logger.error('User ID and Stock ID cannot be null');
         return response.status(400).json({
             message: 'User ID and Stock ID cannot be null',
             status: 400,
@@ -354,7 +402,7 @@ router.post('/addStockToPortfolio', async (request, response) => {
         const userObjId = new mongoose.Types.ObjectId(userId);
         let portfolio = await Portfolio.findOne({ userId: userObjId }).exec();
         if (!portfolio) {
-            Logger.error('Portfolio not found');
+            logger.error('Portfolio not found');
             return response.status(404).json({
                 message: 'Portfolio not found',
                 status: 404,
@@ -364,7 +412,7 @@ router.post('/addStockToPortfolio', async (request, response) => {
         // Check if the stock already exists in the portfolio
         const existingStock = portfolio.stocks.find(stock => String(stock) === stockId); // linear search
         if (existingStock) {
-            Logger.error('Stock already exists in Portfolio');
+            logger.error('Stock already exists in Portfolio');
             return response.status(400).json({
                 message: 'Stock already exists in Portfolio',
                 status: 400,
@@ -374,9 +422,9 @@ router.post('/addStockToPortfolio', async (request, response) => {
         const stockObjId = new mongoose.Types.ObjectId(stockId);
         portfolio.stocks.push(stockObjId);
 
-        Logger.info('Attempting to save Portfolio to MongoDB');
+        logger.info('Attempting to save Portfolio to MongoDB');
         await portfolio.save();
-        Logger.info('Stock added to Portfolio');
+        logger.info('Stock added to Portfolio');
         return response.status(200).json({
             message: 'Stock added to Portfolio',
             status: 200,
