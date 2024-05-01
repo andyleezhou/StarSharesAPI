@@ -96,9 +96,9 @@ router.post("/addToWatchlist", async (request, response) => {
 
   if (!userId || !stockId) {
     logger.error("User ID or stockId cannot be null");
-    return response.status(400).json({
+    return response.status(401).json({
       message: "User ID or stockId cannot be null",
-      status: 400,
+      status: 401,
     });
   }
 
