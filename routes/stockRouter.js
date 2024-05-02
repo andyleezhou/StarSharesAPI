@@ -86,11 +86,11 @@ router.get("/getStock", async (request, response) => {
   });
 
   router.post("/addStock", async (request, response) => {
-    const { artistName, artistImage } = request.body;
-    if (!artistName || !artistImage) {
-        logger.error("Artist Name cannot be null");
+    const { artistName, artistImage, spotifyId } = request.body;
+    if (!artistName || !artistImage || !spotifyId) {
+        logger.error("Artist Name, Artist Image, or Spotify ID cannot be null");
         return response.status(401).json({
-            message: "Artist Name cannot be null",
+            message: "Artist Name, Artist Image, or Spotify ID cannot be null",
             status: 401,
         })
     }
@@ -98,12 +98,13 @@ router.get("/getStock", async (request, response) => {
     const stock = new Stock({
         artistName: artistName,
         artistImage: artistImage,
+        spotifyId: spotifyId,
         cost: 100
     });
    
     try {
        logger.info("Attempting to find stock in MongoDB...");
-       const existingStock = await Stock.findOne({ artistName }).exec();
+       const existingStock = await Stock.findOne({ spotifyId }).exec();
        if (existingStock) {
        logger.error("Stock already found with that artist name!");
             return response.status(400).json({
