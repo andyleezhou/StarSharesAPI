@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const logger = require("../config/logger");
 const Portfolio = require("../model/portfolioSchema");
-const express = require('express');
 const mongoose = require('mongoose');
 const User = require('../model/userSchema');
 const Stock = require('../model/stockSchema'); 
