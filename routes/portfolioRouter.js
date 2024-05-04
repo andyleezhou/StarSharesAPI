@@ -225,8 +225,10 @@ router.get('/getOwnedStocks', async (request, response) => {
 
 router.post('/addTransactionToPortfolio', async (request, response) => {
     const { userId, stockId, transactionType, quantity } = request.body;
+    let portfoliostock = null;
+    let netQuantity = 0; // Initialize netQuantity
 
-    if (!userId || !stockId || !transactionType || !quantity) {
+    if (!userId || !stockId || !transactionType) {
         logger.error('Invalid request parameters');
         return response.status(400).json({
             message: 'Invalid request parameters',
@@ -270,22 +272,6 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
             });
         }
 
-        // Calculate the net quantity of the stock the user holds
-        let buyQuantity = 0;
-        let sellQuantity = 0;
-        for (const transaction of portfolio.transactions) {
-            // Convert transaction.stockId to ObjectId for comparison
-            const transactionStockId = new mongoose.Types.ObjectId(transaction.stockId);
-            if (transactionStockId.equals(stockObjId)) {
-                if (transaction.transactionType === 'buy') {
-                    buyQuantity += transaction.quantity;
-                } else if (transaction.transactionType === 'sell') {
-                    sellQuantity += transaction.quantity;
-                }
-            }
-        }
-        const netQuantity = buyQuantity - sellQuantity;
-
         // If the transaction is a buy, check if there are enough stocks available
         if (transactionType === 'buy' && quantity > stock.quantity) {
             logger.error('Insufficient stocks available');
@@ -295,8 +281,11 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
             });
         }
 
+        // Find the stock in the portfolio
+        portfoliostock = portfolio.stocks.find(stock => String(stock.stockId) === stockId);
+
         // If the transaction is a sell, check if the user has enough stock to sell
-        if (transactionType === 'sell' && quantity > netQuantity) {
+        if (transactionType === 'sell' && portfoliostock.quantity < quantity) {
             logger.error('Insufficient stock to sell');
             return response.status(400).json({
                 message: 'Insufficient stock to sell',
@@ -307,15 +296,17 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         // Deduct the transaction cost from the buying power for a buy transaction
         if (transactionType === 'buy') {
             portfolio.buyingPower -= transactionCost;
+            portfoliostock.quantity += quantity;
         }
 
         if (transactionType === 'sell') {
             portfolio.buyingPower += transactionCost;
+            portfoliostock.quantity -= quantity;
         }
 
-        if (quantity === netQuantity) {
+        if (portfoliostock.quantity === 0) {
             // If the user sells all of their stock, remove the stock from the portfolio
-            portfolio.stocks.pull(stockObjId);
+            portfolio.stocks.pull(portfoliostock._id);
         }
 
         const transaction = {
@@ -343,6 +334,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         });
     }
 });
+
 
 router.delete('/removeStockFromPortfolio', async (request, response) => {
     const { userId, stockId } = request.body;
@@ -387,7 +379,7 @@ router.delete('/removeStockFromPortfolio', async (request, response) => {
 });
 
 router.post('/addStockToPortfolio', async (request, response) => {
-    const { userId, stockId } = request.body;
+    const { userId, stockId, quantity } = request.body;
 
     if (!userId || !stockId) {
         logger.error('User ID and Stock ID cannot be null');
@@ -409,7 +401,7 @@ router.post('/addStockToPortfolio', async (request, response) => {
         }
 
         // Check if the stock already exists in the portfolio
-        const existingStock = portfolio.stocks.find(stock => String(stock) === stockId); // linear search
+        const existingStock = portfolio.stocks.find(stock => String(stock.stockId) === stockId); // linear search
         if (existingStock) {
             logger.error('Stock already exists in Portfolio');
             return response.status(400).json({
@@ -419,7 +411,7 @@ router.post('/addStockToPortfolio', async (request, response) => {
         }
 
         const stockObjId = new mongoose.Types.ObjectId(stockId);
-        portfolio.stocks.push(stockObjId);
+        portfolio.stocks.push({stockId: stockObjId, quantity: quantity});
 
         logger.info('Attempting to save Portfolio to MongoDB');
         await portfolio.save();

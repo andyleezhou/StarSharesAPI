@@ -11,8 +11,16 @@ const portfolioSchema = new mongoose.Schema({
         default: 0
     },
     stocks: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Stock'
+        stockId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Stock',
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            default: 0
+        }
     }],
     transactions: [{
         stockId: {
