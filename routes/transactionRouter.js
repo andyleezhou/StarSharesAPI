@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 const Transaction = require('../model/transactionSchema');
 
 router.get("/getStockTradeCount", async (request, response) => {
-    const { stockId } = req.query;
+    const { stockId } = request.query;
 
     if (!stockId) {
         logger.error("StockId cannot be null");
