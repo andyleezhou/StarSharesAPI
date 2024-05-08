@@ -200,10 +200,10 @@ router.get('/getOwnedStocks', async (request, response) => {
         }
 
         const ownedStocks = [];
-        for (const stockId of portfolio.stocks) {
-            const stock = await Stock.findById(stockId).exec();
-            if (stock) {
-                ownedStocks.push(stock);
+        for (const stock of portfolio.stocks) {
+            const ownedstock = await Stock.findById(stock.stockId).exec();
+            if (ownedstock) {
+                ownedStocks.push(ownedstock);
             }
         }
 
