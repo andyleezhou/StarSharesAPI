@@ -20,7 +20,8 @@ const StockSchema = new mongoose.Schema({
   },
   quantity: {
     type: Number,
-    required: false,
+    required: true,
+    default: 1000,
   },
 });
 

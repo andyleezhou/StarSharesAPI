@@ -131,7 +131,4 @@ router.get("/getStock", async (request, response) => {
   }
 );
 
-
-
-
   module.exports = router;

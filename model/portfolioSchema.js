@@ -8,7 +8,7 @@ const portfolioSchema = new mongoose.Schema({
     },
     buyingPower: {
         type: Number,
-        default: 0
+        default: 1000
     },
     stocks: [{
         stockId: {

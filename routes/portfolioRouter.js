@@ -296,15 +296,15 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         // Deduct the transaction cost from the buying power for a buy transaction
         if (transactionType === 'buy') {
             portfolio.buyingPower -= transactionCost;
-            portfoliostock.quantity += quantity;
+            stock.quantity -= quantity;
         }
 
         if (transactionType === 'sell') {
             portfolio.buyingPower += transactionCost;
-            portfoliostock.quantity -= quantity;
+            stock.quantity += quantity;
         }
 
-        if (portfoliostock.quantity === 0) {
+        if (transactionType === "sell" && portfoliostock.stocks.quantity === 0) {
             // If the user sells all of their stock, remove the stock from the portfolio
             portfolio.stocks.pull(portfoliostock._id);
         }
@@ -315,9 +315,11 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
             quantity: quantity,
             price: stock.cost // Use the fetched stock's cost as the price
         };
-
+        // update the portfolio stock in the databse
         portfolio.transactions.push(transaction);
 
+        logger.info('Attempting to save Stock to MongoDB')
+        await stock.save();
         logger.info('Attempting to save Portfolio to MongoDB');
         await portfolio.save();
         logger.info('Transaction added to Portfolio');
