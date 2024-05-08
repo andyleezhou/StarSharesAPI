@@ -268,7 +268,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
             logger.error('Insufficient buying power');
             return response.status(400).json({
                 message: 'Insufficient buying power',
-                status: 400
+                status: 402
             });
         }
 
@@ -277,19 +277,29 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
             logger.error('Insufficient stocks available');
             return response.status(400).json({
                 message: 'Insufficient stocks available',
-                status: 400
+                status: 406,
+                transactionType: 'buy'
             });
         }
 
         // Find the stock in the portfolio
         portfoliostock = portfolio.stocks.find(stock => String(stock.stockId) === stockId);
-
+        if (!portfoliostock && transactionType == 'sell'){
+            logger.error("You don't own this stock to sell!");
+            return response.status(404).json({
+                message: "You Don't Own This Stock!",
+                status: 404,
+                transactionType: 'sell'
+            });
+        }
         // If the transaction is a sell, check if the user has enough stock to sell
         if (transactionType === 'sell' && portfoliostock.quantity < quantity) {
             logger.error('Insufficient stock to sell');
-            return response.status(400).json({
+            portfolio.stocks.pull(portfoliostock._id);
+            return response.status(406).json({
                 message: 'Insufficient stock to sell',
-                status: 400
+                status: 406,
+                transactionType: 'sell'
             });
         }
 
@@ -381,7 +391,7 @@ router.delete('/removeStockFromPortfolio', async (request, response) => {
 });
 
 router.post('/addStockToPortfolio', async (request, response) => {
-    const { userId, stockId, quantity } = request.body;
+    const { userId, stockId } = request.body;
 
     if (!userId || !stockId) {
         logger.error('User ID and Stock ID cannot be null');
