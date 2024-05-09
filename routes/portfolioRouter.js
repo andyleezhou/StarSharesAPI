@@ -175,7 +175,7 @@ router.get('/getOwnedStocks', async (request, response) => {
         logger.error('User ID cannot be null');
         return response.status(400).json({
             message: 'User ID cannot be null',
-            status: 400,
+            status: 401,
         });
     }
 
@@ -184,7 +184,7 @@ router.get('/getOwnedStocks', async (request, response) => {
             logger.error('Invalid user ID');
             return response.status(400).json({
                 message: 'Invalid user ID',
-                status: 400,
+                status: 402,
                 userId: userId,
             });
         }
@@ -201,7 +201,7 @@ router.get('/getOwnedStocks', async (request, response) => {
 
         const ownedStocks = [];
         for (const stockId of portfolio.stocks) {
-            const stock = await Stock.findById(stockId).exec();
+            const stock = await Stock.findById(stockId.stockId).exec();
             if (stock) {
                 ownedStocks.push(stock);
             }
