@@ -10,6 +10,7 @@ const WatchListRouter = require("./routes/watchListRouter");
 const NotificationRouter = require("./routes/notificationRouter");
 const PortfolioRouter = require("./routes/portfolioRouter");
 const SpotifyRouter = require("./routes/spotifyRouter");
+const TransactionRouter = require("./routes/transactionRouter");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ app.use("/api", WatchListRouter);
 app.use("/api", NotificationRouter);
 app.use("/api", PortfolioRouter);
 app.use("/api", SpotifyRouter);
+app.use("/api", TransactionRouter);
 
 DB.connectDB();
 
