@@ -1,31 +1,51 @@
-const mongoose = require("mongoose");
-const { ObjectId } = require("mongodb");
+const mongoose = require('mongoose');
 
-const PortfolioSchema = new mongoose.Schema({
-    balance: {
-      type: Number,
-      required: true,
-    },
-    stocks: {
-        type: [ObjectId],
-        ref: 'Stock',
+const portfolioSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
+        unique: true
     },
     buyingPower: {
         type: Number,
-        required: true,
+        default: 0
     },
-    quantity: {
-        type: Number,
-        required: true,
-    },
-    transactions: {
-        type: [ObjectId],
-        ref: 'Transaction',
-        required: true,
-    },
-  });
+    stocks: [{
+        stockId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Stock',
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            default: 0
+        }
+    }],
+    transactions: [{
+        stockId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Stock',
+            required: true
+        },
+        transactionType: {
+            type: String,
+            enum: ['buy', 'sell'],
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true
+        },
+        price: {
+            type: Number,
+            required: true
+        },
+        timestamp: {
+            type: Date,
+            default: Date.now
+        }
+    }]
+});
 
-const Portfolio = mongoose.model("Portfolio", PortfolioSchema);
-
-module.exports = Portfolio;
+module.exports = mongoose.model('Portfolio', portfolioSchema);

@@ -173,8 +173,11 @@ router.get('/recently-viewed-artists', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    const lastFiveRecentlyViewed = user.recentlyViewed.slice(-5);
+    
     // fetch recently viewed artists
-    res.json(user.recentlyViewed);
+    res.json(lastFiveRecentlyViewed);
   } catch (error) {
     console.error('Error fetching recently viewed artists:', error);
     res.status(500).json({ message: 'Server error' });
@@ -182,20 +185,29 @@ router.get('/recently-viewed-artists', async (req, res) => {
 });
 
 router.post('/recently-viewed-artists', async (req, res) => {
-  const { userId, artistId } = req.body;
+  const userId = req.query.userId;
+  const artistId = req.query.artistId;
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    user.recentlyViewed.push(artistId);
-    await user.save();
-    res.json({ message: 'Artist added to recently viewed' });
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Filter out the artistId if it exists, and keep the rest
+      user.recentlyViewed = user.recentlyViewed.filter(id => id !== artistId);
+
+      // Add the artistId to the end of recentlyViewed
+      user.recentlyViewed.push(artistId);
+      await user.save();
+      res.json({ message: 'Artist added to recently viewed' });
   } catch (error) {
-    console.error('Error adding recently viewed artist:', error);
-    res.status(500).json({ message: 'Server error' });
+      console.log(userId)
+      console.error('Error adding recently viewed artist:', error);
+      res.status(500).json({ message: 'Server error' });
   }
 });
+
+
 
 router.delete('/recently-viewed-artists', async (req, res) => {
   const { userId } = req.body;

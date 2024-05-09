@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const StockSchema = new mongoose.Schema({
+  spotifyId: {
+    type: String,
+    required: true,
+  },
   artistName: {
     type: String,
     required: true,
