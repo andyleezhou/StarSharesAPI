@@ -227,6 +227,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
     const { userId, stockId, transactionType, quantity } = request.body;
     let portfoliostock = null;
     let netQuantity = 0; // Initialize netQuantity
+    const balance = User.balance
 
     if (!userId || !stockId || !transactionType) {
         logger.error('Invalid request parameters');
@@ -247,6 +248,11 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
             });
         }
 
+        const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
         // Convert stockId to ObjectId
         const stockObjId = new mongoose.Types.ObjectId(stockId);
 
@@ -264,7 +270,7 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         const transactionCost = quantity * stock.cost;
 
         // Check if the user has enough buying power for a buy transaction
-        if (transactionType === 'buy' && portfolio.buyingPower < transactionCost) {
+        if (transactionType === 'buy' && user.balance < transactionCost) {
             logger.error('Insufficient buying power');
             return response.status(400).json({
                 message: 'Insufficient buying power',
@@ -295,12 +301,12 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
 
         // Deduct the transaction cost from the buying power for a buy transaction
         if (transactionType === 'buy') {
-            portfolio.buyingPower -= transactionCost;
+            user.balance -= transactionCost;
             portfoliostock.quantity += quantity;
         }
 
         if (transactionType === 'sell') {
-            portfolio.buyingPower += transactionCost;
+            user.balance += transactionCost;
             portfoliostock.quantity -= quantity;
         }
 
@@ -320,11 +326,13 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
 
         logger.info('Attempting to save Portfolio to MongoDB');
         await portfolio.save();
+        await user.save();
         logger.info('Transaction added to Portfolio');
         return response.status(200).json({
             message: 'Transaction added to Portfolio',
             status: 200,
-            portfolio: portfolio
+            portfolio: portfolio,
+            balance: user.balance
         });
     } catch (error) {
         return response.status(500).json({
