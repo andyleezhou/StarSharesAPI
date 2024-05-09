@@ -18,6 +18,11 @@ const UserSchema = new mongoose.Schema({
       type: String,
       required: true,
   },
+  balance: {
+    type: Number,
+    default: 100000,
+    required: true,
+  },
   portfolio: {
     type: [ObjectId],
     ref: 'Portfolio',
