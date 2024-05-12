@@ -108,8 +108,6 @@ router.get("/getStock", async (request, response) => {
        const existingStock = await Stock.findOne({ spotifyId }).exec();
        if (existingStock) {
        logger.error("Stock already found with that artist name!");
-       console.log(typeof existingStock.cost);
-       console.log(typeof artistValue);
         if (existingStock.cost !== artistValue) {
           logger.info("Artist cost is changed. Updating cost according to artist value!");
           existingStock.cost = artistValue;
