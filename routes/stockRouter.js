@@ -86,8 +86,9 @@ router.get("/getStock", async (request, response) => {
   });
 
   router.post("/addStock", async (request, response) => {
-    const { artistName, artistImage, spotifyId } = request.body;
-    if (!artistName || !artistImage || !spotifyId) {
+    const { artistName, artistImage, spotifyId, artistValue } = request.body;
+    console.log(artistValue);
+    if (!artistName || !artistImage || !spotifyId || !artistValue) {
         logger.error("Artist Name, Artist Image, or Spotify ID cannot be null");
         return response.status(401).json({
             message: "Artist Name, Artist Image, or Spotify ID cannot be null",
@@ -99,7 +100,7 @@ router.get("/getStock", async (request, response) => {
         artistName: artistName,
         artistImage: artistImage,
         spotifyId: spotifyId,
-        cost: 100
+        cost: artistValue
     });
    
     try {
@@ -107,12 +108,20 @@ router.get("/getStock", async (request, response) => {
        const existingStock = await Stock.findOne({ spotifyId }).exec();
        if (existingStock) {
        logger.error("Stock already found with that artist name!");
-            return response.status(400).json({
-                message: "Stock already in database!",
-                stock: existingStock,
-                status: 400,
-            })
+       console.log(typeof existingStock.cost);
+       console.log(typeof artistValue);
+        if (existingStock.cost !== artistValue) {
+          logger.info("Artist cost is changed. Updating cost according to artist value!");
+          existingStock.cost = artistValue;
+          await existingStock.save();
         }
+        return response.status(400).json({
+            message: "Stock already in database!",
+            stock: existingStock,
+            status: 400,
+        })
+        }
+        
       logger.info("Attempting to save artist stock to MongoDB")
       await stock.save();
       logger.info("Artist stock saved")
