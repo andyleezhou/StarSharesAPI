@@ -3,7 +3,7 @@ require("dotenv").config()
 
 
 const connectDB = () => {
-  const url = process.env.MONGO_CONNECTION;
+  const url = process.env.MONGO_CONNECTION || "mongodb+srv://andyzhou:7fDdHqYJyJPJK8H4@cecs323.qs5vj94.mongodb.net/?retryWrites=true&w=majority";
 
   try {
     mongoose.connect(url);
