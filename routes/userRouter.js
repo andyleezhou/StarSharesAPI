@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
 const { hashPassword, validateUser } = require('../util/bcrypt');
 const {retrieveUserId, tokenIsNotValid} = require('../util/jwt');
-const Portfolio = require('../model/portfolioSchema');
 
 router.post("/signup", async (request, response) => {
     const { firstName, lastName, email, password } = request.body;
@@ -20,20 +19,11 @@ router.post("/signup", async (request, response) => {
 
     let hashedPassword = hashPassword(password);
 
-    const portfolio = new Portfolio({
-        balance: 0,
-        stocks: [], 
-        buyingPower: 0,
-        quantity: 0,
-        transactions: [],
-    });
-
     const user = new User({
         email,
         password: hashedPassword,
         firstName,
         lastName,
-        portfolio
     });
    
     try {
@@ -46,9 +36,8 @@ router.post("/signup", async (request, response) => {
                 status: 400,
             })
         }
-      logger.info("Attempting to save user with portfolio to MongoDB")
+      logger.info("Attempting to save user to MongoDB")
       await user.save();
-      await portfolio.save()
       logger.info("User saved")
       return response.status(200).json({ 
           message: "User successfully saved", 
