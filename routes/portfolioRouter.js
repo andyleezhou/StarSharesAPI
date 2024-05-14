@@ -203,7 +203,7 @@ router.get('/getOwnedStocks', async (request, response) => {
         for (const stockId of portfolio.stocks) {
             const stock = await Stock.findById(stockId.stockId).exec();
             if (stock) {
-                ownedStocks.push(stock);
+                ownedStocks.push({stockdId: stockId.stockId, artistName: stock.artistName, cost: stock.cost, quantity: stockId.quantity});
             }
         }
 
@@ -225,6 +225,7 @@ router.get('/getOwnedStocks', async (request, response) => {
 
 router.post('/addTransactionToPortfolio', async (request, response) => {
     const { userId, stockId, transactionType, quantity } = request.body;
+    console.log("quantity: ", quantity);
     let portfoliostock = null;
     let netQuantity = 0; // Initialize netQuantity
     const balance = User.balance
@@ -302,12 +303,12 @@ router.post('/addTransactionToPortfolio', async (request, response) => {
         // Deduct the transaction cost from the buying power for a buy transaction
         if (transactionType === 'buy') {
             user.balance -= transactionCost;
-            portfoliostock.quantity += quantity;
+            portfoliostock.quantity += Number(quantity);
         }
 
         if (transactionType === 'sell') {
             user.balance += transactionCost;
-            portfoliostock.quantity -= quantity;
+            portfoliostock.quantity -= Number(quantity);
         }
 
         if (portfoliostock.quantity === 0) {
@@ -412,14 +413,18 @@ router.post('/addStockToPortfolio', async (request, response) => {
         const existingStock = portfolio.stocks.find(stock => String(stock.stockId) === stockId); // linear search
         if (existingStock) {
             logger.error('Stock already exists in Portfolio');
+            // const stockObjId = new mongoose.Types.ObjectId(stockId);
+            // portfolio.stocks[stockObjId].quantity += Number(quantity);
+            // await portfolio.save();
             return response.status(400).json({
                 message: 'Stock already exists in Portfolio',
                 status: 400,
+                portfolio: portfolio
             });
         }
 
         const stockObjId = new mongoose.Types.ObjectId(stockId);
-        portfolio.stocks.push({stockId: stockObjId, quantity: quantity});
+        portfolio.stocks.push({stockId: stockObjId, quantity: 0});
 
         logger.info('Attempting to save Portfolio to MongoDB');
         await portfolio.save();
