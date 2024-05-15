@@ -203,7 +203,7 @@ router.get('/getOwnedStocks', async (request, response) => {
         for (const stockId of portfolio.stocks) {
             const stock = await Stock.findById(stockId.stockId).exec();
             if (stock) {
-                ownedStocks.push({stockdId: stockId.stockId, artistName: stock.artistName, cost: stock.cost, quantity: stockId.quantity});
+                ownedStocks.push({stockdId: stockId.stockId, artistName: stock.artistName, cost: stock.cost, quantity: stockId.quantity, artistImage: stock.artistImage});
             }
         }
 
