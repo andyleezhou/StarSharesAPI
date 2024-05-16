@@ -22,13 +22,13 @@ router.get('/events', (request, response) => {
 });
 
 // Endpoint to send notifications
-router.get('/notifications', (request, response) => {
-    const { title, message } = request.params;
+router.post('/notifications', (request, response) => {
+    const { title, message } = request.body;
 
     if (!title || !message) {
-        logger.error("Title, message, or userId cannot be null");
+        logger.error("Title, message cannot be null");
         return response.status(400).json({
-            message: "Title, message, or userId cannot be null",
+            message: "Title, message cannot be null",
             status: 400,
         });
     }
