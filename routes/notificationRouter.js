@@ -22,7 +22,7 @@ router.get('/events', (request, response) => {
 });
 
 // Endpoint to send notifications
-router.post('/notifications', (request, response) => {
+router.get('/notifications', (request, response) => {
     const { title, message } = request.params;
 
     if (!title || !message) {
